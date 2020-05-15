@@ -1,0 +1,47 @@
+# PEKAT VISION SDK
+
+A simple .NET library for communication with PEKAT VISION.
+
+## Requirements
+
+* .NET Framework or .NET Core with .NET Standard 2.1 support
+
+## Installation
+
+Just compile the sources into the .NET Standard library.
+
+## Usage
+
+Create local analyzer (will start Pekat Vision server in background):
+
+```csharp
+using PekatVisionSDK;
+
+Analyzer analyzer = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project", "optional api key");
+```
+
+Run analysis:
+
+```csharp
+Result result = await analyzer.Analyze("/path/to/image.png", ResultType.AnnotatedImage);
+// context
+string context = result.Context;
+// image data
+byte[] image = result.Image;
+```
+
+You pass path to PNG file and required result type. There is also optional last parameter for additional data (string). There is also variant of this
+method accepting memory buffer with PNG instead of file. You obtain results from Result object. It contains context and image data, any of them can
+be null if not provided by server.
+
+At the end you have to remove the analyzer. This will also destroy the server.
+
+```csharp
+await a.DisposeAsync();
+```
+
+You can also connect to already running server using:
+
+```csharp
+Analyzer analyzer = await Analyzer.CreateRemoteAnalyzer("host", 1234 /* port */, "optional api key");
+```
