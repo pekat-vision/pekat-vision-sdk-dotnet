@@ -45,6 +45,7 @@ You can also connect to already running server using:
 ```csharp
 Analyzer analyzer = await Analyzer.CreateRemoteAnalyzer("host", 1234 /* port */, "optional api key");
 ```
+Remote analyzer enables you to connect to a remotely running PEKAT VISION. It is possible to connect from multiple PCs simultaneously. PEKAT VISION behaves as a server automatically.
 
 ### Multiple cameras
 
