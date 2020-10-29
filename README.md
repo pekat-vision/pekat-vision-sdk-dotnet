@@ -45,3 +45,17 @@ You can also connect to already running server using:
 ```csharp
 Analyzer analyzer = await Analyzer.CreateRemoteAnalyzer("host", 1234 /* port */, "optional api key");
 ```
+
+### Multiple cameras
+
+```csharp
+Analyzer analyzer_camera_1 = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project_camera_1", "");
+Analyzer analyzer_camera_2 = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project_camera_2", "");
+Analyzer analyzer_camera_3 = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project_camera_3", "");
+
+// analyze - loop
+Result result_camera_1 = await analyzer_camera_1.Analyze("/path/to/image.png", ResultType.AnnotatedImage);
+Result result_camera_2 = await analyzer_camera_2.Analyze("/path/to/image.png", ResultType.AnnotatedImage);
+Result result_camera_3 = await analyzer_camera_3.Analyze("/path/to/image.png", ResultType.AnnotatedImage);
+
+```
