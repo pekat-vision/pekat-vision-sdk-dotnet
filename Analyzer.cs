@@ -24,7 +24,7 @@ namespace PekatVisionSDK {
     /// <summary>
     /// Image analyzer instance.
     /// </summary>
-    public class Analyzer : IAsyncDisposable {
+    public class Analyzer : IDisposable {
         private static readonly HttpClient Client = new HttpClient();
         private const int FirstPort = 10000;
         private const int LastPort = 30000;
@@ -167,7 +167,7 @@ namespace PekatVisionSDK {
                 if (defaultWindowsDistPath == null) {
                     string dir = Environment.GetEnvironmentVariable("ProgramFiles");
                     if (dir != null) {
-                        defaultWindowsDistPath = Directory.EnumerateDirectories(dir).FirstOrDefault(d => d.Contains("\\PEKAT VISION", StringComparison.InvariantCultureIgnoreCase));
+                        defaultWindowsDistPath = Directory.EnumerateDirectories(dir).FirstOrDefault(d => d.Contains("\\PEKAT VISION"));
                     }
 
                     if (defaultWindowsDistPath == null) {
@@ -240,11 +240,15 @@ namespace PekatVisionSDK {
             }
         }
 
-        public async ValueTask DisposeAsync() {
+        public async Task DisposeAsync() {
             if (processExit != null) {
                 _ = Client.GetStringAsync(baseUri + "/stop?key=" + stopKey);
                 await processExit.Task;
             }
+        }
+
+        public void Dispose() {
+            DisposeAsync().Wait();
         }
     }
 }
