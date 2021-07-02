@@ -195,7 +195,7 @@ namespace PekatVisionSDK {
         /// <returns>analysis result</returns>
         public async Task<Result> Analyze(string imagePath, ResultType resultType = ResultType.Context, string data = null) {
             using (var file = new FileStream(imagePath, FileMode.Open)) {
-                return await Analyze(new StreamContent(file), resultType, data);
+                return await Analyze("/analyze_image", -1, -1, new StreamContent(file), resultType, data);
             }
         }
 
@@ -207,10 +207,23 @@ namespace PekatVisionSDK {
         /// <param name="data">additional data</param>
         /// <returns>analysis result</returns>
         public async Task<Result> Analyze(byte[] imageData, ResultType resultType = ResultType.Context, string data = null) {
-            return await Analyze(new ByteArrayContent(imageData), resultType, data);
+            return await Analyze("/analyze_image", -1, -1, new ByteArrayContent(imageData), resultType, data);
         }
 
-        private async Task<Result> Analyze(HttpContent content, ResultType resultType = ResultType.Context, string data = null) {
+        /// <summary>
+        /// Analyze raw image stored in memory.
+        /// </summary>
+        /// <param name="imageData">image bytes, width * height * 3</param>
+        /// <param name="width">image width</param>
+        /// <param name="height">image height</param>
+        /// <param name="resultType">requested output</param>
+        /// <param name="data">additional data</param>
+        /// <returns>analysis result</returns>
+        public async Task<Result> AnalyzeRaw(byte[] imageData, int width, int height, ResultType resultType = ResultType.Context, string data = null) {
+            return await Analyze("/analyze_raw_image", width, height, new ByteArrayContent(imageData), resultType, data);
+        }
+
+        private async Task<Result> Analyze(string path, int width, int height, HttpContent content, ResultType resultType = ResultType.Context, string data = null) {
             var query = HttpUtility.ParseQueryString("");
             query.Add("response_type", ResultTypeString[(int)resultType]);
             if (apiKey != null) {
@@ -219,8 +232,12 @@ namespace PekatVisionSDK {
             if (data != null) {
                 query.Add("data", data);
             }
+            if (width > 0) {
+                query.Add("width", width.ToString());
+                query.Add("height", height.ToString());
+            }
 
-            var uri = baseUri + "/analyze_image?" + query;
+            var uri = baseUri + path + "?" + query;
             content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             var response = await Client.PostAsync(uri, content);
             response.EnsureSuccessStatusCode();

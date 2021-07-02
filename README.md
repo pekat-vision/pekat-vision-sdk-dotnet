@@ -30,8 +30,9 @@ string context = result.Context;
 byte[] image = result.Image;
 ```
 
-You pass path to PNG file and required result type. There is also optional last parameter for additional data (string). There is also variant of this
-method accepting memory buffer with PNG instead of file. You obtain results from Result object. It contains context and image data, any of them can
+You pass path to PNG file and required result type. There is optional last parameter for additional data (string). There is also variant of this
+method accepting memory buffer with PNG instead of file. Finally, you can use `AnalyzeRaw` method accepting raw image data and dimensions. There
+should by width * height * 3 bytes in buffer. You obtain results from Result object. It contains context and image data, any of them can
 be null if not provided by server.
 
 At the end you have to remove the analyzer. This will also destroy the server.
