@@ -3,7 +3,7 @@
 // A .NET module for communication with PEKAT VISION 3.10.2 and higher
 //
 // Author: developers@pekatvision.com
-// Date:   1 April 2020
+// Date:   21 December 2021
 // Web:    https://github.com/pekat-vision
 
 using System;
@@ -63,17 +63,17 @@ namespace PekatVisionSDK {
             int port = FindFreePort();
             int stopKey = new Random().Next();
 
-            string exe = Path.Combine(distPath, "pekat_vision", "pekat_vision");
+            string exe = Path.Combine(distPath, "starter", "pekat_vision");
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 exe += ".exe";
             }
             StringBuilder sb = new StringBuilder();
-            sb.Append("-data \"").Append(projectPath).Append("\"");
-            sb.Append(" -host ").Append(host).Append(" -port ").Append(port);
+            sb.Append("start ").Append("--data \"").Append(projectPath).Append("\"");
+            sb.Append(" --host ").Append(host).Append(" --port ").Append(port);
             if (!string.IsNullOrWhiteSpace(apiKey)) {
-                sb.Append(" -api_key \"").Append(apiKey).Append("\"");
+                sb.Append(" --api_key \"").Append(apiKey).Append("\"");
             }
-            sb.Append(" -stop_key ").Append(stopKey);
+            sb.Append(" --stop_key ").Append(stopKey);
 
             if (!string.IsNullOrWhiteSpace(options)) {
                 sb.Append(" ").Append(options);
@@ -269,3 +269,4 @@ namespace PekatVisionSDK {
         }
     }
 }
+
