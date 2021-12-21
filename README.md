@@ -5,6 +5,7 @@ A simple .NET library for communication with PEKAT VISION.
 ## Requirements
 
 * .NET Framework or .NET Core with .NET Standard 2.0 support
+* PEKAT VISION 3.12.0 or higher
 
 ## Installation
 
