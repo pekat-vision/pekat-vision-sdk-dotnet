@@ -63,7 +63,7 @@ namespace PekatVisionSDK {
             int port = FindFreePort();
             int stopKey = new Random().Next();
 
-            string exe = Path.Combine(distPath, "starter", "pekat_vision");
+            string exe = Path.Combine(distPath, "starter", "pekat-vision");
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
                 exe += ".exe";
             }
