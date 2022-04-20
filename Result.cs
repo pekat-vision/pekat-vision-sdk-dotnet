@@ -1,9 +1,9 @@
 // PEKAT VISION api
 //
-// A Python module for communication with PEKAT VISION 3.12.0 and higher
+// A Python module for communication with PEKAT VISION 3.10.2 and higher
 //
 // Author: developers@pekatvision.com
-// Date:   21 December 2021
+// Date:   1 April 2020
 // Web:    https://github.com/pekat-vision
 
 namespace PekatVisionSDK {
@@ -25,4 +25,3 @@ namespace PekatVisionSDK {
         public string Context { get; internal set; }
     }
 }
-
