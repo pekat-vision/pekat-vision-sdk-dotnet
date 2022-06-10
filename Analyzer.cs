@@ -3,7 +3,7 @@
 // A .NET module for communication with PEKAT VISION 3.10.2 and higher
 //
 // Author: developers@pekatvision.com
-// Date:   1 April 2020
+// Date:   10 June 2022
 // Web:    https://github.com/pekat-vision
 
 using System;
@@ -38,6 +38,7 @@ namespace PekatVisionSDK {
         private string apiKey;
         private int stopKey;
         private TaskCompletionSource<bool> processExit;
+        public bool contextInBody { get; set; }
 
         /// <summary>
         /// Create analyzer by running server in background.
@@ -236,6 +237,9 @@ namespace PekatVisionSDK {
                 query.Add("width", width.ToString());
                 query.Add("height", height.ToString());
             }
+            if (contextInBody) {
+                query.Add("context_in_body", 1.ToString());
+            }
 
             var uri = baseUri + path + "?" + query;
             content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
@@ -247,13 +251,30 @@ namespace PekatVisionSDK {
                 return new Result {ResultType = resultType, Context = context};
             } else {
                 string context = null;
-                if (response.Headers.TryGetValues("ContextBase64utf", out var values)) {
-                    var bytes = Convert.FromBase64String(values.First());
-                    context = Encoding.UTF8.GetString(bytes);
-                }
+                if (contextInBody) {
+                    if (!response.Headers.TryGetValues("ImageLen", out var values)) {
+                        context = await response.Content.ReadAsStringAsync();
+                        return new Result {ResultType = resultType, Context = context};
+                    }
+                    
+                    int imageLength = int.Parse(values.First());
+                    
+                    byte[] bytes = await response.Content.ReadAsByteArrayAsync();
+                    
+                    var image           = bytes.Take(imageLength).ToArray();
+                    var contextArray    = bytes.Skip(imageLength).ToArray();
+                    
+                    context = Encoding.UTF8.GetString(contextArray);
+                    return new Result {ResultType = resultType, Context = context, Image = image};
+                } else {
+                    if (response.Headers.TryGetValues("ContextBase64utf", out var values)) {
+                        var bytes = Convert.FromBase64String(values.First());
+                        context = Encoding.UTF8.GetString(bytes);
+                    }
 
-                var image = await response.Content.ReadAsByteArrayAsync();
-                return new Result {ResultType = resultType, Context = context, Image = image};
+                    var image = await response.Content.ReadAsByteArrayAsync();
+                    return new Result {ResultType = resultType, Context = context, Image = image};
+                }
             }
         }
 
