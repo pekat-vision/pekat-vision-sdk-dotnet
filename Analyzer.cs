@@ -38,10 +38,7 @@ namespace PekatVisionSDK {
         private string apiKey;
         private int stopKey;
         private TaskCompletionSource<bool> processExit;
-        public bool contextInBody {
-            get { return contextInBody; }
-            set { contextInBody = value; }
-        }
+        public bool contextInBody { get; set; }
 
         /// <summary>
         /// Create analyzer by running server in background.
@@ -259,10 +256,10 @@ namespace PekatVisionSDK {
                         context = await response.Content.ReadAsStringAsync();
                         return new Result {ResultType = resultType, Context = context};
                     }
-                    var bytes = Convert.FromBase64String(values.First());
-                    int imageLength = int.Parse(Encoding.UTF8.GetString(bytes));
                     
-                    bytes = await response.Content.ReadAsByteArrayAsync();
+                    int imageLength = int.Parse(values.First());
+                    
+                    byte[] bytes = await response.Content.ReadAsByteArrayAsync();
                     
                     var image           = bytes.Take(imageLength).ToArray();
                     var contextArray    = bytes.Skip(imageLength).ToArray();
