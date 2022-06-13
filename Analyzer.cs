@@ -97,7 +97,7 @@ namespace PekatVisionSDK {
             // We need two consecutive ports free
             int lastFree = -1;
             for (int port = FirstPort; port < LastPort; port++) {
-                var ep = new IPEndPoint(IPAddress.Any, port);
+                var ep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
                 Socket socket = new Socket(ep.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 try {
                     socket.Bind(ep);
