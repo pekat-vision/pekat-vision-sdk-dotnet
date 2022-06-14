@@ -14,6 +14,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -47,7 +48,7 @@ namespace PekatVisionSDK {
         /// <param name="projectPath">path to project</param>
         /// <param name="apiKey">optional API key</param>
         /// <param name="options">optional additional parameters for server executable</param>
-        public static async Task<Analyzer> CreateLocalAnalyzer(string distPath, string projectPath, string apiKey, string options = null) {
+        public static async Task<Analyzer> CreateLocalAnalyzer(string distPath, string projectPath, string apiKey, string options = null, bool waitForInitModel = false) {
             if (distPath == null) {
                 distPath = DefaultWindowsDistPath;
             }
@@ -58,7 +59,7 @@ namespace PekatVisionSDK {
             if (string.IsNullOrWhiteSpace(projectPath)) {
                 throw new ArgumentException("Project path must not be empty");
             }
-
+            
             // Start process
             string host = "localhost";
             int port = FindFreePort();
@@ -86,11 +87,12 @@ namespace PekatVisionSDK {
             process.StartInfo.Arguments = sb.ToString();
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            process.StartInfo.RedirectStandardOutput = true;
             process.EnableRaisingEvents = true;
             process.Exited += (s, e) => processExit.TrySetResult(true);
             process.Start();
 
-            return await Start(host, port, apiKey, stopKey, process, processExit);
+            return await Start(host, port, apiKey, stopKey, process, processExit, waitForInitModel);
         }
 
         private static int FindFreePort() {
@@ -125,7 +127,7 @@ namespace PekatVisionSDK {
             return await Start(host, port, apiKey, 0, null, null);
         }
 
-        private static async Task<Analyzer> Start(string host, int port, string apiKey, int stopKey, Process process, TaskCompletionSource<bool> processExit) {
+        private static async Task<Analyzer> Start(string host, int port, string apiKey, int stopKey, Process process, TaskCompletionSource<bool> processExit, bool waitForInitModel = false) {
             string url = "http://" + host + ":" + port;
             while (true) {
                 Task<string> responseTask = Analyzer.Client.GetStringAsync(url + "/ping");
@@ -143,6 +145,17 @@ namespace PekatVisionSDK {
                         {
                             var response = await responseTask;
                             // Started successfully
+                            if (waitForInitModel) {
+                                StreamReader reader = process.StandardOutput;
+                                string line = "";
+
+                                while (true) {
+                                    line = reader.ReadLine();
+                                    if (line.Contains("STOP_INIT_MODEL")) {
+                                        break;
+                                    }
+                                }
+                            }
                             return new Analyzer(url, apiKey, stopKey, processExit);
                         }
                         catch (HttpRequestException)
