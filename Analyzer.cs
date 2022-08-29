@@ -3,7 +3,7 @@
 // A .NET module for communication with PEKAT VISION 3.10.2 and higher
 //
 // Author: developers@pekatvision.com
-// Date:   10 June 2022
+// Date:   29 August 2022
 // Web:    https://github.com/pekat-vision
 
 using System;
@@ -193,10 +193,12 @@ namespace PekatVisionSDK {
         /// <param name="imagePath">path to image file</param>
         /// <param name="resultType">requested output</param>
         /// <param name="data">additional data</param>
+        /// <param name="timeout">seconds to timeout</param>
+        /// <exception cref="TaskCanceledException">Thrown when the request times out</exception>
         /// <returns>analysis result</returns>
-        public async Task<Result> Analyze(string imagePath, ResultType resultType = ResultType.Context, string data = null) {
+        public async Task<Result> Analyze(string imagePath, ResultType resultType = ResultType.Context, string data = null, double timeout = 30.0) {
             using (var file = new FileStream(imagePath, FileMode.Open)) {
-                return await Analyze("/analyze_image", -1, -1, new StreamContent(file), resultType, data);
+                return await Analyze("/analyze_image", -1, -1, new StreamContent(file), resultType, data, timeout);
             }
         }
 
@@ -206,9 +208,11 @@ namespace PekatVisionSDK {
         /// <param name="imageData">image bytes</param>
         /// <param name="resultType">requested output</param>
         /// <param name="data">additional data</param>
+        /// <param name="timeout">seconds to timeout</param>
+        /// <exception cref="TaskCanceledException">Thrown when the request times out</exception>
         /// <returns>analysis result</returns>
-        public async Task<Result> Analyze(byte[] imageData, ResultType resultType = ResultType.Context, string data = null) {
-            return await Analyze("/analyze_image", -1, -1, new ByteArrayContent(imageData), resultType, data);
+        public async Task<Result> Analyze(byte[] imageData, ResultType resultType = ResultType.Context, string data = null, double timeout = 30.0) {
+            return await Analyze("/analyze_image", -1, -1, new ByteArrayContent(imageData), resultType, data, timeout);
         }
 
         /// <summary>
@@ -219,12 +223,14 @@ namespace PekatVisionSDK {
         /// <param name="height">image height</param>
         /// <param name="resultType">requested output</param>
         /// <param name="data">additional data</param>
+        /// <param name="timeout">seconds to timeout</param>
+        /// <exception cref="TaskCanceledException">Thrown when the request times out</exception>
         /// <returns>analysis result</returns>
-        public async Task<Result> AnalyzeRaw(byte[] imageData, int width, int height, ResultType resultType = ResultType.Context, string data = null) {
-            return await Analyze("/analyze_raw_image", width, height, new ByteArrayContent(imageData), resultType, data);
+        public async Task<Result> AnalyzeRaw(byte[] imageData, int width, int height, ResultType resultType = ResultType.Context, string data = null, double timeout = 30.0) {
+            return await Analyze("/analyze_raw_image", width, height, new ByteArrayContent(imageData), resultType, data, timeout);
         }
 
-        private async Task<Result> Analyze(string path, int width, int height, HttpContent content, ResultType resultType = ResultType.Context, string data = null) {
+        private async Task<Result> Analyze(string path, int width, int height, HttpContent content, ResultType resultType = ResultType.Context, string data = null, double timeout = 30.0) {
             var query = HttpUtility.ParseQueryString("");
             query.Add("response_type", ResultTypeString[(int)resultType]);
             if (apiKey != null) {
@@ -243,7 +249,9 @@ namespace PekatVisionSDK {
 
             var uri = baseUri + path + "?" + query;
             content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-            var response = await Client.PostAsync(uri, content);
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(TimeSpan.FromSeconds(timeout));
+            var response = await Client.PostAsync(uri, content, cts.Token);
             response.EnsureSuccessStatusCode();
             if (resultType == ResultType.Context) {
                 // Just context
