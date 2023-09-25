@@ -12,12 +12,14 @@ Just compile the sources into the .NET Standard library.
 
 ## Usage
 
-Create local analyzer (will start Pekat Vision server in background):
+Create local analyzer (will start Pekat Vision server in background), automatically determine port by default (you can specify port as well):
 
 ```csharp
 using PekatVisionSDK;
 
-Analyzer analyzer = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project", "optional api key");
+Analyzer analyzer = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project", 1234 /* port */, "optional api key");
+Analyzer analyzer_auto_port = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project");
+// Analyzer.port has the port
 ```
 
 Run analysis:
@@ -51,9 +53,9 @@ Remote analyzer enables you to connect to a remotely running PEKAT VISION. It is
 ### Multiple cameras
 
 ```csharp
-Analyzer analyzer_camera_1 = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project_camera_1", "");
-Analyzer analyzer_camera_2 = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project_camera_2", "");
-Analyzer analyzer_camera_3 = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project_camera_3", "");
+Analyzer analyzer_camera_1 = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project_camera_1", 0, "");
+Analyzer analyzer_camera_2 = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project_camera_2", 0, "");
+Analyzer analyzer_camera_3 = await Analyzer.CreateLocalAnalyzer("/path/to/server/installation", "/path/to/project_camera_3", 0, "");
 
 // analyze - loop
 Result result_camera_1 = await analyzer_camera_1.Analyze("/path/to/image.png", ResultType.AnnotatedImage);
