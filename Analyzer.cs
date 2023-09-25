@@ -3,7 +3,7 @@
 // A .NET module for communication with PEKAT VISION 3.10.2 and higher
 //
 // Author: developers@pekatvision.com
-// Date:   10 June 2022
+// Date:   25 Sep 2023
 // Web:    https://github.com/pekat-vision
 
 using System;
@@ -39,6 +39,7 @@ namespace PekatVisionSDK {
         private int stopKey;
         private TaskCompletionSource<bool> processExit;
         public bool contextInBody { get; set; }
+        public int port { get; }
 
         /// <summary>
         /// Create analyzer by running server in background.
@@ -47,7 +48,7 @@ namespace PekatVisionSDK {
         /// <param name="projectPath">path to project</param>
         /// <param name="apiKey">optional API key</param>
         /// <param name="options">optional additional parameters for server executable</param>
-        public static async Task<Analyzer> CreateLocalAnalyzer(string distPath, string projectPath, string apiKey, string options = null) {
+        public static async Task<Analyzer> CreateLocalAnalyzer(string distPath, string projectPath, string apiKey, int port = 0, string options = null) {
             if (distPath == null) {
                 distPath = DefaultWindowsDistPath;
             }
@@ -61,7 +62,9 @@ namespace PekatVisionSDK {
 
             // Start process
             string host = "localhost";
-            int port = FindFreePort();
+            if (port <= 0) {
+                port = FindFreePort();
+            }
             int stopKey = new Random().Next();
 
             string exe = Path.Combine(distPath, "pekat_vision", "pekat_vision");
@@ -143,7 +146,7 @@ namespace PekatVisionSDK {
                         {
                             var response = await responseTask;
                             // Started successfully
-                            return new Analyzer(url, apiKey, stopKey, processExit);
+                            return new Analyzer(url, apiKey, stopKey, processExit, port);
                         }
                         catch (HttpRequestException)
                         {
@@ -158,7 +161,7 @@ namespace PekatVisionSDK {
                         }
                     }
                 } else {
-                    return new Analyzer(url, apiKey, stopKey, processExit);
+                    return new Analyzer(url, apiKey, stopKey, processExit, port);
                 }
             }
         }
@@ -180,11 +183,12 @@ namespace PekatVisionSDK {
             }
         }
 
-        private Analyzer(string baseUri, string apiKey, int stopKey, TaskCompletionSource<bool> processExit) {
+        private Analyzer(string baseUri, string apiKey, int stopKey, TaskCompletionSource<bool> processExit, int port) {
             this.baseUri = baseUri;
             this.apiKey = apiKey;
             this.stopKey = stopKey;
             this.processExit = processExit;
+            this.port = port;
         }
 
         /// <summary>
