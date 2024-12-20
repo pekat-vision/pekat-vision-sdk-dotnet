@@ -48,7 +48,7 @@ namespace PekatVisionSDK {
         /// <param name="projectPath">path to project</param>
         /// <param name="apiKey">optional API key</param>
         /// <param name="options">optional additional parameters for server executable</param>
-        public static async Task<Analyzer> CreateLocalAnalyzer(string distPath, string projectPath, string apiKey, int port = 0, string options = null) {
+        public static async Task<Analyzer> CreateLocalAnalyzer(string distPath, string projectPath, string apiKey = null, int port = 0, string options = null) {
             if (distPath == null) {
                 distPath = DefaultWindowsDistPath;
             }
@@ -124,7 +124,7 @@ namespace PekatVisionSDK {
         /// <summary>
         /// Create analyzer connecting to remote server.
         /// </summary>
-        public static async Task<Analyzer> CreateRemoteAnalyzer(string host, int port, string apiKey) {
+        public static async Task<Analyzer> CreateRemoteAnalyzer(string host, int port, string apiKey = null) {
             return await Start(host, port, apiKey, 0, null, null);
         }
 
