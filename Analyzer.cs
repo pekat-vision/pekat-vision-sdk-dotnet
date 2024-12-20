@@ -196,11 +196,12 @@ namespace PekatVisionSDK {
         /// </summary>
         /// <param name="imagePath">path to image file</param>
         /// <param name="resultType">requested output</param>
+        /// <param name="args">additional HTTP request arguments</param>
         /// <param name="data">additional data</param>
         /// <returns>analysis result</returns>
-        public async Task<Result> Analyze(string imagePath, ResultType resultType = ResultType.Context, string data = null) {
+        public async Task<Result> Analyze(string imagePath, ResultType resultType = ResultType.Context, (string, string)[] args = null, string data = null) {
             using (var file = new FileStream(imagePath, FileMode.Open)) {
-                return await Analyze("/analyze_image", -1, -1, new StreamContent(file), resultType, data);
+                return await Analyze("/analyze_image", -1, -1, new StreamContent(file), resultType, args, data);
             }
         }
 
@@ -209,10 +210,11 @@ namespace PekatVisionSDK {
         /// </summary>
         /// <param name="imageData">image bytes</param>
         /// <param name="resultType">requested output</param>
+        /// <param name="args">additional HTTP request arguments</param>
         /// <param name="data">additional data</param>
         /// <returns>analysis result</returns>
-        public async Task<Result> Analyze(byte[] imageData, ResultType resultType = ResultType.Context, string data = null) {
-            return await Analyze("/analyze_image", -1, -1, new ByteArrayContent(imageData), resultType, data);
+        public async Task<Result> Analyze(byte[] imageData, ResultType resultType = ResultType.Context, (string, string)[] args = null, string data = null) {
+            return await Analyze("/analyze_image", -1, -1, new ByteArrayContent(imageData), resultType, args, data);
         }
 
         /// <summary>
@@ -222,13 +224,14 @@ namespace PekatVisionSDK {
         /// <param name="width">image width</param>
         /// <param name="height">image height</param>
         /// <param name="resultType">requested output</param>
+        /// <param name="args">additional HTTP request arguments</param>
         /// <param name="data">additional data</param>
         /// <returns>analysis result</returns>
-        public async Task<Result> AnalyzeRaw(byte[] imageData, int width, int height, ResultType resultType = ResultType.Context, string data = null) {
-            return await Analyze("/analyze_raw_image", width, height, new ByteArrayContent(imageData), resultType, data);
+        public async Task<Result> AnalyzeRaw(byte[] imageData, int width, int height, ResultType resultType = ResultType.Context, (string, string)[] args = null, string data = null) {
+            return await Analyze("/analyze_raw_image", width, height, new ByteArrayContent(imageData), resultType, args, data);
         }
 
-        private async Task<Result> Analyze(string path, int width, int height, HttpContent content, ResultType resultType = ResultType.Context, string data = null) {
+        private async Task<Result> Analyze(string path, int width, int height, HttpContent content, ResultType resultType = ResultType.Context, (string, string)[] args = null, string data = null) {
             var query = HttpUtility.ParseQueryString("");
             query.Add("response_type", ResultTypeString[(int)resultType]);
             if (apiKey != null) {
@@ -243,6 +246,12 @@ namespace PekatVisionSDK {
             }
             if (contextInBody) {
                 query.Add("context_in_body", 1.ToString());
+            }
+            if (args != null) {
+                foreach (var pair in args)
+                {
+                    query.Add(pair.Item1, pair.Item2);
+                }
             }
 
             var uri = baseUri + path + "?" + query;
